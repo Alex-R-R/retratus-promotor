@@ -341,6 +341,11 @@ isOneToOne: false
 "apply_to_job":
 { Args: { "p_equipment": (string)[],"p_job_id": string }; Returns: undefined
                            },
+"calendar":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "briefing": Database["public"]['Enums']["briefing_status"],"city": string,"client_name": string,"day_id": string,"ends_at": string,"job_id": string,"location": string,"promoters": Json,"slots": Json,"starts_at": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
 "cancel_job":
 { Args: { "p_job_id": string,"p_reason": string }; Returns: undefined
                            },

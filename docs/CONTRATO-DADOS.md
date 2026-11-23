@@ -116,6 +116,20 @@ Rotas do app: gestão `/trabalhos/<id>`, promotor `/vagas/<id>`, agenda do promo
 | `selection_created`, `job_changed`, `job_cancelled`, `selection_removed` | `/meus-trabalhos` |
 | candidatura nova (novo: `application_created`, para owner e manager) | `/trabalhos/<id>` |
 
+## Fase 3 · calendário (ramo `fase-3`)
+
+Nova migration `2026112500000x_fase3_*.sql`. A `agenda` da fase 1 continua como está.
+
+- `calendar(p_from timestamptz, p_to timestamptz)` (qualquer perfil aprovado) → uma linha por `job_day` que cruza o período:
+  - `day_id, job_id, title, type, status, briefing, location, city, client_name, starts_at, ends_at`
+  - `slots jsonb`: `[{equipment, capacity, filled}]`. `filled` = seleções desse equipamento neste dia.
+  - `promoters jsonb`: `[{promoter_id, full_name, equipment}]`.
+  - **Promotor:** só os dias em que foi selecionado, inclusive de trabalho cancelado (aparece riscado). `slots` vem nulo, `client_name` nulo, e `promoters` só com ele mesmo.
+  - **owner/manager/media:** todos os dias, exceto de `rascunho`, que só owner/manager recebem.
+  - Ordenado por `starts_at`.
+
+O link do aviso de seleção e de cancelamento passa a ser `/agenda?d=<data local do 1º dia>`. A rota `/meus-trabalhos` redireciona para `/agenda`.
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.

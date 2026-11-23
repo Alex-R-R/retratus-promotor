@@ -62,3 +62,48 @@ export function periodo(firstIso: string | null, lastIso: string | null) {
 }
 
 export const horas = (startIso: string, endIso: string) => (new Date(endIso).getTime() - new Date(startIso).getTime()) / 3_600_000
+
+// ---------- Calendário (semana começa na segunda-feira) ----------
+
+/** 0 = segunda … 6 = domingo, para uma data local 'YYYY-MM-DD'. */
+export function diaDaSemana(date: string) {
+  const js = new Date(`${date}T12:00:00${OFFSET}`).getUTCDay() // 0 = domingo
+  return (js + 6) % 7
+}
+
+export const inicioDaSemana = (date: string) => addDays(date, -diaDaSemana(date))
+export const inicioDoMes = (date: string) => `${date.slice(0, 7)}-01`
+export function proximoMes(date: string, n = 1) {
+  const [y, m] = date.slice(0, 7).split('-').map(Number)
+  const total = y * 12 + (m - 1) + n
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-01`
+}
+
+/** Grade do mês: começa na segunda antes do dia 1 e fecha semanas completas. */
+export function gradeDoMes(date: string) {
+  const primeiro = inicioDoMes(date)
+  const inicio = inicioDaSemana(primeiro)
+  const fimMes = addDays(proximoMes(date), -1)
+  const fim = addDays(inicioDaSemana(fimMes), 6)
+  const dias: string[] = []
+  for (let d = inicio; d <= fim; d = addDays(d, 1)) dias.push(d)
+  return dias
+}
+
+/** Meia-noite local da data, em ISO. */
+export const meiaNoite = (date: string) => new Date(`${date}T00:00:00${OFFSET}`).toISOString()
+
+const nomeData = (date: string, opts: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('pt-BR', { timeZone: ZONE, ...opts }).format(new Date(`${date}T12:00:00${OFFSET}`))
+
+export const tituloMes = (date: string) => { const s = nomeData(date, { month: 'long', year: 'numeric' }); return s[0].toUpperCase() + s.slice(1) }
+export const tituloDia = (date: string) => { const s = nomeData(date, { weekday: 'long', day: 'numeric', month: 'long' }); return s[0].toUpperCase() + s.slice(1) }
+export function tituloSemana(date: string) {
+  const ini = inicioDaSemana(date), fim = addDays(ini, 6)
+  const d = (x: string, o: Intl.DateTimeFormatOptions) => nomeData(x, o).replace('.', '')
+  return ini.slice(0, 7) === fim.slice(0, 7)
+    ? `${d(ini, { day: 'numeric' })} a ${d(fim, { day: 'numeric', month: 'long' })}`
+    : `${d(ini, { day: 'numeric', month: 'short' })} a ${d(fim, { day: 'numeric', month: 'short' })}`
+}
+export const nomeSemanaCurto = (date: string) => nomeData(date, { weekday: 'short' }).replace('.', '')
+export const numeroDia = (date: string) => String(Number(date.slice(8)))

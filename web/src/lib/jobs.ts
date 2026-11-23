@@ -61,3 +61,22 @@ export function dbError(e: { message: string; code?: string } | null, fallback: 
   if (e.message?.toLowerCase().includes('failed to fetch')) return 'Sem conexão com o servidor. Tente de novo.'
   return e.message || fallback
 }
+
+export interface CalSlot { equipment: string; capacity: number; filled: number }
+export interface CalPromoter { promoter_id: string; full_name: string; equipment: string }
+export interface CalRow {
+  day_id: string; job_id: string; title: string; type: JobType; status: JobStatus; briefing: Briefing
+  location: string | null; city: string | null; client_name: string | null
+  starts_at: string; ends_at: string
+  slots: CalSlot[] | null; promoters: CalPromoter[]
+}
+
+/** Situação da equipe num dia: define a cor da marcação no calendário. */
+export function situacaoDia(r: CalRow): 'cancelado' | 'rascunho' | 'completo' | 'aberto' | 'meu' {
+  if (r.status === 'cancelado') return 'cancelado'
+  if (r.status === 'rascunho') return 'rascunho'
+  if (!r.slots) return 'meu'
+  const cap = r.slots.reduce((n, s) => n + s.capacity, 0)
+  const ocup = r.slots.reduce((n, s) => n + s.filled, 0)
+  return cap > 0 && ocup >= cap ? 'completo' : 'aberto'
+}

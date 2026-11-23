@@ -157,7 +157,7 @@ select is((select count(*) from public.notifications where kind = 'job_published
 
 select is((select count(*) from public.notifications where kind = 'job_published' and link = '/vagas/' || '30000000-0000-0000-0000-000000000092'), 6::bigint, 'Publicação avisa somente os promotores aprovados');
 
-select is((select array_agg(user_id) from public.notifications where kind = 'selection_created' and link = '/meus-trabalhos' and body = 'Evento contíguo'), array['10000000-0000-0000-0000-000000000004']::uuid[], 'Seleção avisa somente o promotor selecionado');
+select is((select array_agg(user_id) from public.notifications where kind = 'selection_created' and link = '/agenda?d=2026-11-28' and body = 'Evento contíguo'), array['10000000-0000-0000-0000-000000000004']::uuid[], 'Seleção avisa somente o promotor selecionado');
 
 select is((select count(*) from public.notifications where kind = 'profile_approved' and user_id = '10000000-0000-0000-0000-000000000010'), 1::bigint, 'Aprovação avisa a pessoa');
 

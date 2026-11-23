@@ -18,7 +18,7 @@ import TrabalhoForm from './pages/TrabalhoForm'
 import TrabalhoDetalhe from './pages/TrabalhoDetalhe'
 import Vagas from './pages/Vagas'
 import VagaDetalhe from './pages/VagaDetalhe'
-import MeusTrabalhos from './pages/MeusTrabalhos'
+import Agenda from './pages/Agenda'
 
 /** Links antigos de aviso (/jobs/<id>) levam à tela certa de cada perfil. */
 function JobsLegado() {
@@ -37,7 +37,7 @@ function Protegida({ children, staffOnly = false, acesso }: { children: ReactNod
   const { session, profile, loading } = useAuth()
   const location = useLocation()
   if (loading) return <Carregando />
-  if (!session) return <Navigate to="/entrar" replace state={{ from: location.pathname }} />
+  if (!session) return <Navigate to="/entrar" replace state={{ from: location.pathname + location.search }} />
   if (!profile) return <Carregando />
   if (!profile.approved) return <Navigate to="/aguardando" replace />
   const pode = acesso === 'promotor' ? profile.role === 'promoter'
@@ -72,7 +72,8 @@ export default function App() {
       <Route path="/trabalhos/:id/editar" element={<Protegida acesso="gestao"><TrabalhoForm /></Protegida>} />
       <Route path="/vagas" element={<Protegida acesso="promotor"><Vagas /></Protegida>} />
       <Route path="/vagas/:id" element={<Protegida acesso="promotor"><VagaDetalhe /></Protegida>} />
-      <Route path="/meus-trabalhos" element={<Protegida acesso="promotor"><MeusTrabalhos /></Protegida>} />
+      <Route path="/agenda" element={<Protegida><Agenda /></Protegida>} />
+      <Route path="/meus-trabalhos" element={<Navigate to="/agenda" replace />} />
       <Route path="/jobs/:id" element={<Protegida><JobsLegado /></Protegida>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

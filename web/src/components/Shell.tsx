@@ -24,9 +24,9 @@ export default function Shell({ children }: { children: ReactNode }) {
     { to: '/', label: 'Início', show: true },
     { to: '/trabalhos', label: 'Trabalhos', show: !promotor },
     { to: '/vagas', label: 'Vagas', show: promotor },
-    { to: '/meus-trabalhos', label: 'Meus trabalhos', show: promotor },
+    { to: '/agenda', label: 'Agenda', show: true },
     { to: '/equipe', label: 'Equipe', show: staff, contador: pendentes },
-    { to: '/perfil', label: 'Meu cadastro', show: true },
+    { to: '/perfil', label: 'Meu cadastro', show: true, soDesktop: true },
   ].filter(i => i.show)
 
   return (
@@ -50,13 +50,16 @@ export default function Shell({ children }: { children: ReactNode }) {
 
       <header className="topo-movel">
         <img src={logo} alt="Retratus" />
-        <button className="btn-texto" onClick={() => void signOut()}>Sair</button>
+        <div className="topo-acoes">
+          <NavLink to="/perfil">Meu cadastro</NavLink>
+          <button className="btn-texto" onClick={() => void signOut()}>Sair</button>
+        </div>
       </header>
 
       <main className="conteudo">{children}</main>
 
       <nav className="nav-movel" aria-label="Principal">
-        {itens.map(i => <NavLink key={i.to} to={i.to} end={i.to === '/'}>{i.label}</NavLink>)}
+        {itens.filter(i => !i.soDesktop).map(i => <NavLink key={i.to} to={i.to} end={i.to === '/'}>{i.label}</NavLink>)}
       </nav>
     </div>
   )

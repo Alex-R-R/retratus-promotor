@@ -106,7 +106,7 @@ select ok((select row_to_json(b)::text not like '%Promotor fictício 06%' from j
 select ok((select i_am_selected from job_board() where job_id = (select id from fixture where name = 'main')), 'Quadro indica seleção própria');
 select is((select count(*) from my_jobs(now() + interval '39 days', now() + interval '42 days')
   where job_id = (select id from fixture where name = 'main')), 1::bigint, 'Agenda retorna somente os dias da seleção própria');
-select is((select count(*) from notifications where kind = 'job_changed' and link = '/meus-trabalhos'),
+select is((select count(*) from notifications where kind = 'job_changed' and link = ('/agenda?d=' || to_char((now() + interval '40 days') at time zone 'America/Belem', 'YYYY-MM-DD'))),
   1::bigint, 'Reagendamento avisa o selecionado uma vez');
 select lives_ok($sql$select apply_to_job((select id from fixture where name = 'main'), array['Totem'])$sql$,
   'RPC cria candidatura do promotor autenticado');
@@ -170,14 +170,14 @@ select lives_ok($sql$select select_promoter((select id from fixture where name =
   'Trabalho cancelado não bloqueia seleção no mesmo horário');
 
 set local "request.jwt.claim.sub" = '10000000-0000-0000-0000-000000000008';
-select is((select count(*) from notifications where kind = 'job_cancelled' and link = '/meus-trabalhos'),
+select is((select count(*) from notifications where kind = 'job_cancelled' and link = ('/agenda?d=' || to_char((now() + interval '40 days') at time zone 'America/Belem', 'YYYY-MM-DD'))),
   1::bigint, 'Selecionado recebe aviso de cancelamento');
 select is((select status::text from my_jobs(now() + interval '39 days', now() + interval '41 days')
   where job_id = (select id from fixture where name = 'main')), 'cancelado', 'Agenda preserva trabalho cancelado');
 select is((select count(*) from job_board() where job_id = (select id from fixture where name = 'main')), 0::bigint, 'Quadro oculta cancelado');
 
 set local "request.jwt.claim.sub" = '10000000-0000-0000-0000-000000000009';
-select is((select count(*) from notifications where kind = 'selection_removed' and link = '/meus-trabalhos'),
+select is((select count(*) from notifications where kind = 'selection_removed' and link = ('/agenda?d=' || to_char((now() + interval '40 days') at time zone 'America/Belem', 'YYYY-MM-DD'))),
   1::bigint, 'Promotor removido recebe aviso');
 select is((select count(*) from notifications where kind = 'job_cancelled'), 0::bigint, 'Cancelamento não avisa seleção já removida');
 
