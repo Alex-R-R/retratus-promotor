@@ -19,8 +19,12 @@ export default function Shell({ children }: { children: ReactNode }) {
       .then(({ count }) => setPendentes(count ?? 0))
   }, [staff, pathname])
 
+  const promotor = profile?.role === 'promoter'
   const itens = [
     { to: '/', label: 'Início', show: true },
+    { to: '/trabalhos', label: 'Trabalhos', show: !promotor },
+    { to: '/vagas', label: 'Vagas', show: promotor },
+    { to: '/meus-trabalhos', label: 'Meus trabalhos', show: promotor },
     { to: '/equipe', label: 'Equipe', show: staff, contador: pendentes },
     { to: '/perfil', label: 'Meu cadastro', show: true },
   ].filter(i => i.show)

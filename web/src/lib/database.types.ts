@@ -338,6 +338,12 @@ isOneToOne: false
               "city": string,"ends_at": string,"id": string,"job_id": string,"location": string,"promoters": Json,"starts_at": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
             }[]
                            },
+"apply_to_job":
+{ Args: { "p_equipment": (string)[],"p_job_id": string }; Returns: undefined
+                           },
+"cancel_job":
+{ Args: { "p_job_id": string,"p_reason": string }; Returns: undefined
+                           },
 "current_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["user_role"]
                            },
@@ -349,13 +355,45 @@ isOneToOne: false
 "is_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"job_board":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "application_deadline": string,"city": string,"days": Json,"i_am_selected": boolean,"job_id": string,"location": string,"my_application": (string)[],"notes": string,"slots": Json,"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
+"job_candidates":
+{ Args: { "p_job_id": string }; Returns: {
+              "applied_at": string,"applied_equipment": (string)[],"conflict_day_ids": (string)[],"full_name": string,"link": Database["public"]['Enums']["person_link"],"phone": string,"promoter_id": string,"selections": Json
+            }[]
+                           },
+"jobs_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "applications_count": number,"briefing": Database["public"]['Enums']["briefing_status"],"capacity_total": number,"city": string,"client_name": string,"day_count": number,"filled_total": number,"first_start": string,"job_id": string,"last_end": string,"location": string,"staffing": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
+"my_jobs":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "city": string,"ends_at": string,"equipment": string,"job_id": string,"location": string,"starts_at": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
 "promoter_job_counts":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "dias_acao": number,"eventos": number,"full_name": string,"promoter_id": string,"valor_total": number
             }[]
                            },
+"publish_job":
+{ Args: { "p_job_id": string }; Returns: undefined
+                           },
+"remove_selection":
+{ Args: { "p_selection_id": string }; Returns: undefined
+                           },
+"save_job":
+{ Args: { "p_days": Json,"p_job": Json,"p_job_id": string,"p_slots": Json }; Returns: string
+                           },
 "select_promoter":
 { Args: { "p_day_ids": (string)[],"p_equipment": string,"p_job_id": string,"p_promoter_id": string }; Returns: string
+                           },
+"set_briefing":
+{ Args: { "p_briefing": Database["public"]['Enums']["briefing_status"],"p_job_id": string }; Returns: undefined
                            }
           }
           Enums: {

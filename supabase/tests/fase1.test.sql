@@ -153,11 +153,11 @@ select lives_ok($sql$update public.profiles set approved = true where id = '1000
 
 reset role;
 
-select is((select count(*) from public.notifications where kind = 'job_published' and link = '/jobs/' || '30000000-0000-0000-0000-000000000092' and user_id in ('10000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000009')), 6::bigint, 'Publicação avisa todos os promotores aprovados');
+select is((select count(*) from public.notifications where kind = 'job_published' and link = '/vagas/' || '30000000-0000-0000-0000-000000000092' and user_id in ('10000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000009')), 6::bigint, 'Publicação avisa todos os promotores aprovados');
 
-select is((select count(*) from public.notifications where kind = 'job_published' and link = '/jobs/' || '30000000-0000-0000-0000-000000000092'), 6::bigint, 'Publicação avisa somente os promotores aprovados');
+select is((select count(*) from public.notifications where kind = 'job_published' and link = '/vagas/' || '30000000-0000-0000-0000-000000000092'), 6::bigint, 'Publicação avisa somente os promotores aprovados');
 
-select is((select array_agg(user_id) from public.notifications where kind = 'selection_created' and link = '/jobs/' || '30000000-0000-0000-0000-000000000095'), array['10000000-0000-0000-0000-000000000004']::uuid[], 'Seleção avisa somente o promotor selecionado');
+select is((select array_agg(user_id) from public.notifications where kind = 'selection_created' and link = '/meus-trabalhos' and body = 'Evento contíguo'), array['10000000-0000-0000-0000-000000000004']::uuid[], 'Seleção avisa somente o promotor selecionado');
 
 select is((select count(*) from public.notifications where kind = 'profile_approved' and user_id = '10000000-0000-0000-0000-000000000010'), 1::bigint, 'Aprovação avisa a pessoa');
 

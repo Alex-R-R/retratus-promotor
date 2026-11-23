@@ -65,6 +65,57 @@ Ponto aberto do Codex: evento e seu único dia precisam ser gravados na mesma tr
 - `agenda(p_from, p_to)` → linhas de `job_days` com trabalho, local, horários e promotores selecionados. Promotor recebe só os dias em que foi selecionado.
 - `select_promoter(p_job_id, p_promoter_id, p_equipment, p_day_ids uuid[])` → cria seleção com as travas acima.
 
+## Fase 2 · fluxo de vagas (ramo `fase-2`)
+
+Tudo em uma nova migration `2026112400000x_fase2_*.sql`. Não reescrever migrations da fase 1.
+
+### Escrita (owner/manager, `security definer`, uma transação cada)
+
+- `save_job(p_job_id uuid, p_job jsonb, p_days jsonb, p_slots jsonb) returns uuid`
+  - `p_job_id` nulo cria; preenchido edita.
+  - `p_job`: `{type, title, client_id, location, city, briefing, notes}`.
+  - `p_days`: `[{id?, starts_at, ends_at}]`. Dia com `id` é atualizado, sem `id` é criado, e o dia que ficar de fora é removido.
+  - `p_slots`: `[{equipment, capacity}]`. O equipamento que ficar de fora é removido.
+  - Recusa remover um dia ou equipamento que já tenha seleção, recusa reduzir capacidade abaixo dos selecionados e recusa editar trabalho `cancelado` ou `realizado`. O tipo `evento` continua com exatamente 1 dia.
+  - Se um dia com selecionados mudar de horário, os promotores afetados recebem aviso `job_changed`, e as travas de conflito continuam valendo.
+- `publish_job(p_job_id uuid)`: só sai de `rascunho`; exige ≥1 dia futuro e ≥1 equipamento. Mantém o aviso `job_published`.
+- `cancel_job(p_job_id uuid, p_reason text)`: motivo obrigatório; vale para `rascunho` e `publicado`; avisa os selecionados (`job_cancelled`). As seleções ficam como histórico.
+- `remove_selection(p_selection_id uuid)`: só antes do início do primeiro dia da seleção; avisa o promotor (`selection_removed`).
+- `set_briefing(p_job_id uuid, p_briefing briefing_status)`: atalho para a gestão marcar o briefing.
+
+### Candidatura (promotor aprovado)
+
+- `apply_to_job(p_job_id uuid, p_equipment text[]) returns void` cria a candidatura do promotor autenticado ou atualiza seus equipamentos na mesma operação.
+  - Exige trabalho `publicado`, equipamentos cadastrados para o trabalho e prazo aberto até 24 horas antes do primeiro dia. Após o prazo, a candidatura existente é preservada.
+  - Envia `application_created` somente na criação. Para retirar a candidatura, use `DELETE` em `applications`.
+
+### Leitura
+
+- `jobs_overview(p_from timestamptz, p_to timestamptz)` (owner/manager/media) → uma linha por trabalho com dias no período (rascunhos sem dia também entram):
+  `job_id, title, type, status, briefing, city, location, client_name, first_start, last_end, day_count, capacity_total, filled_total, applications_count, staffing ('sem_vagas'|'vagas_abertas'|'equipe_completa')`.
+  - `capacity_total` = soma de capacidade × dias.
+  - `filled_total` = soma dos `selection_days`.
+  - `equipe_completa` quando cada equipamento está cheio em todos os dias.
+- `job_board()` (promotor aprovado) → trabalhos `publicado` com prazo de candidatura aberto:
+  `job_id, title, type, city, location, notes, application_deadline, days jsonb [{id, starts_at, ends_at}], slots jsonb [{equipment, capacity, open_days}], my_application text[] | null, i_am_selected bool`.
+  - `open_days` = quantos dias ainda têm vaga nesse equipamento.
+  - Não expõe nomes de outros promotores.
+- `job_candidates(p_job_id uuid)` (owner/manager) → candidatos e selecionados:
+  `promoter_id, full_name, phone, link, applied_equipment text[] | null, applied_at, selections jsonb [{selection_id, equipment, day_ids}], conflict_day_ids uuid[]`.
+  - `conflict_day_ids` = dias deste trabalho em que a pessoa já está escalada em outro trabalho no mesmo horário, exceto se o outro trabalho estiver cancelado.
+  - Inclui quem foi selecionado sem candidatura.
+- `my_jobs(p_from, p_to)` (promotor) → os dias em que foi selecionado: `job_id, title, type, city, location, equipment, starts_at, ends_at, status`.
+
+### Links dos avisos
+
+Rotas do app: gestão `/trabalhos/<id>`, promotor `/vagas/<id>`, agenda do promotor `/meus-trabalhos`.
+
+| Aviso | Link |
+| --- | --- |
+| `job_published` | `/vagas/<id>` |
+| `selection_created`, `job_changed`, `job_cancelled`, `selection_removed` | `/meus-trabalhos` |
+| candidatura nova (novo: `application_created`, para owner e manager) | `/trabalhos/<id>` |
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.
