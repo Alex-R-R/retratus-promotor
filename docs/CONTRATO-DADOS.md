@@ -210,6 +210,18 @@ A primeira mídia de um trabalho gera um aviso para os donos e a gestão aprovad
 
 Mídias seguintes no mesmo trabalho não geram aviso.
 
+## Fase 6 · produção (ramo `fase-6`)
+
+Migration `20261128000001_fase6_producao.sql`:
+
+- **Trava de horário e capacidade.** Mesmas regras e mensagens de antes, mas a checagem agora olha só as linhas que o comando mudou. Também passa a rodar quando um trabalho sai de `cancelado`.
+- **`selections`.** Só aceita promotor aprovado (`role = promoter`), também na escrita direta. Mensagem: "Seleção exige promotor aprovado."
+- **Remoção de seleção paga.** O banco recusa apagar uma seleção com pagamento marcado como pago. Os donos precisam desmarcar antes. Isso vale também para `remove_selection`.
+- **`applications`.** O cliente só insere `job_id`, `promoter_id` e `equipment`. `id` e `created_at` vêm do banco.
+- **Schema privado.** `retratus_private` fica sem execução para o cliente, exceto `promoter_can_read_job`, usada pela RLS.
+
+Publicação, e-mails, domínio e backup estão em `docs/PUBLICACAO.md`.
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.

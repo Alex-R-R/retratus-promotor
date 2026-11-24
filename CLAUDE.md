@@ -15,7 +15,9 @@ Comandos: `npm run dev` (http://localhost:4173), `npm test`, `npm run lint`, `np
 
 ## App de produção (em construção)
 
-- Plano: `docs/PLANO-PRODUCAO.md`. Contrato banco ↔ app: `docs/CONTRATO-DADOS.md`.
+- Plano: `docs/PLANO-PRODUCAO.md`. Contrato banco ↔ app: `docs/CONTRATO-DADOS.md`. Publicação (Supabase nuvem, Cloudflare Pages, domínio, backup): `docs/PUBLICACAO.md`.
+- App instalável (PWA) via `vite-plugin-pwa`; ícones gerados de `web/public/icon.svg` com `npx pwa-assets-generator` (na pasta `web`).
+- GitHub Actions: `verificacao.yml` (lint, build e testes do banco a cada envio) e `backup.yml` (cópia diária criptografada).
 - `supabase/`: migrations, RLS, RPCs, seed e testes pgTAP (frente do Codex).
 - `web/`: React + TypeScript + Vite (frente do Claude). `npm --prefix web run dev`, `npm --prefix web run build`, `npm --prefix web run lint`.
 - Local: Docker Desktop ligado, `npx supabase start`, `npx supabase db reset`, `npx supabase test db`. Copiar URL e anon key para `web/.env.local`.

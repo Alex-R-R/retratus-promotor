@@ -1,0 +1,54 @@
+# Cópia diária do banco de produção, criptografada, guardada por 30 dias nos artefatos do GitHub.
+# Segredos necessários (Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL      conexão do Session pooler (Supabase > Connect), com a senha do banco
+#   BACKUP_PASSPHRASE    senha longa usada para criptografar; guarde-a fora do GitHub
+name: Backup do banco
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 3h da manhã em Belém
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conferir segredos
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Cadastre SUPABASE_DB_URL e BACKUP_PASSPHRASE nos segredos do repositório."
+            exit 1
+          fi
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.3.0
+      - name: Exportar papéis, estrutura e dados
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir backup
+          supabase db dump --remote="$SUPABASE_DB_URL" --yes -f backup/roles.sql --role-only
+          supabase db dump --remote="$SUPABASE_DB_URL" --yes -f backup/schema.sql
+          supabase db dump --remote="$SUPABASE_DB_URL" --yes -f backup/data.sql --use-copy --data-only
+      - name: Compactar e criptografar
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          nome="retratus-$(date -u +%Y-%m-%d).tar.gz"
+          tar -czf "$nome" -C backup .
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 -o "$nome.gpg" "$nome"
+          rm -rf backup "$nome"
+          echo "ARQUIVO=$nome.gpg" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARQUIVO }}
+          path: ${{ env.ARQUIVO }}
+          retention-days: 30
+          if-no-files-found: error

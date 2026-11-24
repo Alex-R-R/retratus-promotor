@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { useAuth } from './auth/AuthProvider'
 import { supabaseConfigured } from './lib/supabase'
 import { isStaff, veMidias } from './lib/types'
@@ -10,18 +10,20 @@ import RecuperarSenha from './pages/RecuperarSenha'
 import NovaSenha from './pages/NovaSenha'
 import Aguardando from './pages/Aguardando'
 import Inicio from './pages/Inicio'
-import Equipe from './pages/Equipe'
-import Perfil from './pages/Perfil'
 import SemConfiguracao from './pages/SemConfiguracao'
-import Trabalhos from './pages/Trabalhos'
-import TrabalhoForm from './pages/TrabalhoForm'
-import TrabalhoDetalhe from './pages/TrabalhoDetalhe'
-import Vagas from './pages/Vagas'
-import VagaDetalhe from './pages/VagaDetalhe'
-import Agenda from './pages/Agenda'
-import Valores from './pages/Valores'
-import Midias from './pages/Midias'
-import MidiaTrabalho from './pages/MidiaTrabalho'
+
+// Telas carregadas sob demanda: o celular baixa só o que vai abrir.
+const Equipe = lazy(() => import('./pages/Equipe'))
+const Perfil = lazy(() => import('./pages/Perfil'))
+const Trabalhos = lazy(() => import('./pages/Trabalhos'))
+const TrabalhoForm = lazy(() => import('./pages/TrabalhoForm'))
+const TrabalhoDetalhe = lazy(() => import('./pages/TrabalhoDetalhe'))
+const Vagas = lazy(() => import('./pages/Vagas'))
+const VagaDetalhe = lazy(() => import('./pages/VagaDetalhe'))
+const Agenda = lazy(() => import('./pages/Agenda'))
+const Valores = lazy(() => import('./pages/Valores'))
+const Midias = lazy(() => import('./pages/Midias'))
+const MidiaTrabalho = lazy(() => import('./pages/MidiaTrabalho'))
 
 /** Links antigos de aviso (/jobs/<id>) levam à tela certa de cada perfil. */
 function JobsLegado() {
@@ -49,7 +51,7 @@ function Protegida({ children, staffOnly = false, acesso }: { children: ReactNod
     : acesso === 'trabalhos' ? profile.role !== 'promoter'
     : (staffOnly || acesso === 'gestao') ? isStaff(profile) : true
   if (!pode) return <Navigate to="/" replace />
-  return <Shell>{children}</Shell>
+  return <Shell><Suspense fallback={<p className="subtitulo">Carregando…</p>}>{children}</Suspense></Shell>
 }
 
 function Publica({ children }: { children: ReactNode }) {
