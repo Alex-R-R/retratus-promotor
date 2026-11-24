@@ -80,3 +80,39 @@ export function situacaoDia(r: CalRow): 'cancelado' | 'rascunho' | 'completo' | 
   const ocup = r.slots.reduce((n, s) => n + s.filled, 0)
   return cap > 0 && ocup >= cap ? 'completo' : 'aberto'
 }
+
+// Fase 4 · painel e valores (docs/CONTRATO-DADOS.md). Valores só chegam para owner.
+export interface DashboardCounts { aguardando_briefing: number; briefing_fechado: number; vagas_abertas: number; equipe_completa: number }
+export interface PromoterCount {
+  promoter_id: string; full_name: string; eventos: number; dias_acao: number
+  valor_total: number | null; valor_pago: number | null; sem_valor: number | null
+}
+export type PaySource = Enums['pay_source']
+export interface PaymentRow {
+  selection_id: string; job_id: string; title: string; type: JobType
+  promoter_id: string; full_name: string; equipment: string
+  day_count: number; hours: number; first_start: string
+  amount: number | null; source: PaySource | null; suggested: number | null; paid_at: string | null
+}
+
+const fBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+export const brl = (v: number | string | null | undefined) => fBRL.format(Number(v ?? 0))
+
+/** Lê "130", "130,5", "1.300,50" ou "R$ 130,00". Vazio = null; inválido = NaN. */
+export function lerValor(texto: string): number | null {
+  if (!texto.trim()) return null
+  const s = texto.replace(/^\s*R\$\s*/, '').trim()
+  // Milhar só com ponto em grupos de 3; centavos com vírgula (ou ponto, se não houver milhar).
+  const br = /^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/.exec(s)
+  if (br) return Number(`${br[1].replace(/\./g, '')}.${br[2] ?? '0'}`)
+  return /^\d+\.\d{1,2}$/.test(s) ? Number(s) : NaN
+}
+
+/** Valor para preencher um campo: 130 → "130,00". */
+export const valorCampo = (v: number | null) => v === null ? '' : Number(v).toFixed(2).replace('.', ',')
+
+export const duracao = (h: number) => {
+  const n = Number(h)
+  const inteiro = Math.floor(n), min = Math.round((n - inteiro) * 60)
+  return min ? `${inteiro}h${String(min).padStart(2, '0')}` : `${inteiro}h`
+}

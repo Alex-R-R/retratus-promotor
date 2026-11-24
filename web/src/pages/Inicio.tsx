@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabase'
 import { isStaff } from '../lib/types'
+import Painel from '../components/Painel'
 
 interface Aviso { id: string; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string }
 
@@ -45,7 +46,7 @@ export default function Inicio() {
       <div className="cabecalho">
         <div>
           <h1 className="titulo">Olá, {primeiroNome}</h1>
-          <p className="subtitulo">{staff ? 'Avisos da operação e cadastros que precisam da sua atenção.' : 'Seus avisos de vagas e de seleção para trabalhos.'}</p>
+          <p className="subtitulo">{staff ? 'Como estão os trabalhos do período, quem está trabalhando e os avisos da operação.' : 'Seus avisos de vagas e de seleção para trabalhos.'}</p>
         </div>
       </div>
 
@@ -55,6 +56,8 @@ export default function Inicio() {
           <Link className="btn" to="/equipe">Ver cadastros</Link>
         </div>
       )}
+
+      {staff && <Painel dono={profile?.role === 'owner'} />}
 
       <section className="secao" aria-labelledby="avisos">
         <div className="cabecalho" style={{ marginBottom: 12 }}>

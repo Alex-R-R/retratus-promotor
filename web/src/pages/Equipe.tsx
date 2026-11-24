@@ -47,9 +47,9 @@ export default function Equipe() {
         </div>
       </div>
 
-      <div className="abas" role="tablist">
-        <button role="tab" aria-selected={aba === 'pendentes'} onClick={() => setAba('pendentes')}>Aguardando aprovação ({pendentes.length})</button>
-        <button role="tab" aria-selected={aba === 'ativos'} onClick={() => setAba('ativos')}>Equipe ativa ({ativos.length})</button>
+      <div className="abas" role="group" aria-label="Cadastros">
+        <button aria-pressed={aba === 'pendentes'} onClick={() => setAba('pendentes')}>Aguardando aprovação ({pendentes.length})</button>
+        <button aria-pressed={aba === 'ativos'} onClick={() => setAba('ativos')}>Equipe ativa ({ativos.length})</button>
       </div>
 
       {erro && <p className="erro" role="alert">{erro}</p>}
@@ -62,7 +62,7 @@ export default function Equipe() {
       )}
 
       {lista.length > 0 && (
-        <ul className="lista" role="tabpanel">
+        <ul className="lista">
           {lista.map(p => (
             <li key={p.id}>
               <div>

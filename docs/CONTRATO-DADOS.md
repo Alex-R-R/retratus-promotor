@@ -130,6 +130,46 @@ Nova migration `2026112500000x_fase3_*.sql`. A `agenda` da fase 1 continua como 
 
 O link do aviso de seleção e de cancelamento passa a ser `/agenda?d=<data local do 1º dia>`. A rota `/meus-trabalhos` redireciona para `/agenda`.
 
+## Fase 4 · painel e valores (ramo `fase-4`)
+
+Nova migration `2026112600000x_fase4_*.sql`. Não reescrever migrations anteriores. Valores continuam só para owner (RLS e RPC).
+
+### Pagamentos
+
+- `payments` ganha `paid_at timestamptz null`. Pago = `paid_at` preenchido.
+- A sugestão de valor de evento vira uma função única `retratus_private.event_suggestion(hours numeric) returns numeric`. Valor exato da tabela para a duração; acima da maior faixa, maior faixa + horas excedentes × `extra_hour_amount`. Retorna nulo quando não há regra.
+- Recalcular `payments` com `source = 'tabela'` e `paid_at` nulo sempre que mudar `event_pay_rates`, `pay_settings` ou o horário de um `job_day` de evento:
+  - cria a linha que faltava;
+  - atualiza o valor;
+  - remove a linha quando a sugestão fica nula.
+  - Pagamento `manual` ou já pago nunca é tocado. Trabalho cancelado fica fora.
+- Trabalho cancelado não entra em nenhum total.
+
+### Leitura
+
+- `dashboard_counts(p_from, p_to)` continua igual.
+- `promoter_job_counts(p_from, p_to)` (owner/manager) passa a devolver:
+  - `promoter_id, full_name, eventos, dias_acao, valor_total, valor_pago, sem_valor`.
+  - Só promotores aprovados ou que tenham trabalho no período.
+  - Os valores ficam nulos para manager. `sem_valor` é a quantidade de seleções sem pagamento.
+  - Valores e `sem_valor` contam a seleção no período em que cai o **primeiro dia dela**, para uma ação que atravessa o mês não ser somada duas vezes.
+- `payments_overview(p_from, p_to)` (owner) → uma linha por seleção cujo primeiro dia começa no período, sem trabalho cancelado:
+  - `selection_id, job_id, title, type, promoter_id, full_name, equipment, day_count, hours numeric, first_start, amount numeric | null, source pay_source | null, suggested numeric | null, paid_at`.
+  - `hours` é a soma das durações dos dias da seleção.
+  - `suggested` é o valor da tabela (só evento).
+  - Ordenado por `first_start` e depois por nome.
+
+### Escrita (owner)
+
+- `set_payment(p_selection_id uuid, p_amount numeric) returns void`.
+  - Grava valor `manual`.
+  - Com `p_amount` nulo, apaga o manual e volta para a sugestão da tabela, quando houver.
+  - Recusa: valor negativo, seleção de trabalho cancelado e pagamento já pago (é preciso desmarcar antes).
+- `set_paid(p_selection_ids uuid[], p_paid boolean) returns integer`.
+  - Marca `paid_at = now()` ou o limpa e devolve quantas linhas mudaram.
+  - Recusa seleção sem valor.
+- Tabela de eventos: escrita direta em `event_pay_rates` (`hours`, `amount`) e `pay_settings.extra_hour_amount`. A RLS já limita ao owner, e o recálculo acima dispara sozinho.
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.

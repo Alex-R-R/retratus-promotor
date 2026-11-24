@@ -107,8 +107,8 @@ export default function Agenda() {
       </div>
 
       <div className="agenda-barra">
-        <div className="segmentado" role="tablist" aria-label="Visão da agenda">
-          {VISOES.map(v => <button key={v.id} role="tab" aria-selected={visao === v.id} onClick={() => ir({ v: v.id })}>{v.label}</button>)}
+        <div className="segmentado" role="group" aria-label="Visão da agenda">
+          {VISOES.map(v => <button key={v.id} aria-pressed={visao === v.id} onClick={() => ir({ v: v.id })}>{v.label}</button>)}
         </div>
         <div className="agenda-navega">
           <button className="btn btn-linha seta" onClick={() => passo(-1)} aria-label="Anterior">‹</button>

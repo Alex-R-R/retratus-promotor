@@ -19,6 +19,7 @@ import TrabalhoDetalhe from './pages/TrabalhoDetalhe'
 import Vagas from './pages/Vagas'
 import VagaDetalhe from './pages/VagaDetalhe'
 import Agenda from './pages/Agenda'
+import Valores from './pages/Valores'
 
 /** Links antigos de aviso (/jobs/<id>) levam à tela certa de cada perfil. */
 function JobsLegado() {
@@ -31,7 +32,7 @@ function Carregando() {
   return <div className="boot" role="status"><span className="boot-frame" aria-hidden="true" />Carregando…</div>
 }
 
-type Acesso = 'gestao' | 'trabalhos' | 'promotor'
+type Acesso = 'gestao' | 'trabalhos' | 'promotor' | 'dono'
 
 function Protegida({ children, staffOnly = false, acesso }: { children: ReactNode; staffOnly?: boolean; acesso?: Acesso }) {
   const { session, profile, loading } = useAuth()
@@ -40,7 +41,8 @@ function Protegida({ children, staffOnly = false, acesso }: { children: ReactNod
   if (!session) return <Navigate to="/entrar" replace state={{ from: location.pathname + location.search }} />
   if (!profile) return <Carregando />
   if (!profile.approved) return <Navigate to="/aguardando" replace />
-  const pode = acesso === 'promotor' ? profile.role === 'promoter'
+  const pode = acesso === 'dono' ? profile.role === 'owner'
+    : acesso === 'promotor' ? profile.role === 'promoter'
     : acesso === 'trabalhos' ? profile.role !== 'promoter'
     : (staffOnly || acesso === 'gestao') ? isStaff(profile) : true
   if (!pode) return <Navigate to="/" replace />
@@ -73,6 +75,7 @@ export default function App() {
       <Route path="/vagas" element={<Protegida acesso="promotor"><Vagas /></Protegida>} />
       <Route path="/vagas/:id" element={<Protegida acesso="promotor"><VagaDetalhe /></Protegida>} />
       <Route path="/agenda" element={<Protegida><Agenda /></Protegida>} />
+      <Route path="/valores" element={<Protegida acesso="dono"><Valores /></Protegida>} />
       <Route path="/meus-trabalhos" element={<Navigate to="/agenda" replace />} />
       <Route path="/jobs/:id" element={<Protegida><JobsLegado /></Protegida>} />
       <Route path="*" element={<Navigate to="/" replace />} />

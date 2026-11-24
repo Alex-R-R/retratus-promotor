@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"payments": {
                   Row: {
-                    "amount": number,"selection_id": string,"source": Database["public"]['Enums']["pay_source"],"updated_at": string,"updated_by": string | null
+                    "amount": number,"paid_at": string | null,"selection_id": string,"source": Database["public"]['Enums']["pay_source"],"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"selection_id": string,"source"?: Database["public"]['Enums']["pay_source"],"updated_at"?: string,"updated_by"?: string | null
+                    "amount": number,"paid_at"?: string | null,"selection_id": string,"source"?: Database["public"]['Enums']["pay_source"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"selection_id"?: string,"source"?: Database["public"]['Enums']["pay_source"],"updated_at"?: string,"updated_by"?: string | null
+                    "amount"?: number,"paid_at"?: string | null,"selection_id"?: string,"source"?: Database["public"]['Enums']["pay_source"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -380,9 +380,14 @@ isOneToOne: false
               "city": string,"ends_at": string,"equipment": string,"job_id": string,"location": string,"starts_at": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
             }[]
                            },
+"payments_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "amount": number,"day_count": number,"equipment": string,"first_start": string,"full_name": string,"hours": number,"job_id": string,"paid_at": string,"promoter_id": string,"selection_id": string,"source": Database["public"]['Enums']["pay_source"],"suggested": number,"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
 "promoter_job_counts":
 { Args: { "p_from": string,"p_to": string }; Returns: {
-              "dias_acao": number,"eventos": number,"full_name": string,"promoter_id": string,"valor_total": number
+              "dias_acao": number,"eventos": number,"full_name": string,"promoter_id": string,"sem_valor": number,"valor_pago": number,"valor_total": number
             }[]
                            },
 "publish_job":
@@ -399,6 +404,12 @@ isOneToOne: false
                            },
 "set_briefing":
 { Args: { "p_briefing": Database["public"]['Enums']["briefing_status"],"p_job_id": string }; Returns: undefined
+                           },
+"set_paid":
+{ Args: { "p_paid": boolean,"p_selection_ids": (string)[] }; Returns: number
+                           },
+"set_payment":
+{ Args: { "p_amount": number,"p_selection_id": string }; Returns: undefined
                            }
           }
           Enums: {

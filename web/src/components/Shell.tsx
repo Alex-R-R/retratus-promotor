@@ -25,6 +25,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     { to: '/trabalhos', label: 'Trabalhos', show: !promotor },
     { to: '/vagas', label: 'Vagas', show: promotor },
     { to: '/agenda', label: 'Agenda', show: true },
+    { to: '/valores', label: 'Valores', show: profile?.role === 'owner' },
     { to: '/equipe', label: 'Equipe', show: staff, contador: pendentes },
     { to: '/perfil', label: 'Meu cadastro', show: true, soDesktop: true },
   ].filter(i => i.show)
