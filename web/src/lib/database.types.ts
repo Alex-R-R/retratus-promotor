@@ -370,9 +370,19 @@ isOneToOne: false
               "applied_at": string,"applied_equipment": (string)[],"conflict_day_ids": (string)[],"full_name": string,"link": Database["public"]['Enums']["person_link"],"phone": string,"promoter_id": string,"selections": Json
             }[]
                            },
+"job_media":
+{ Args: { "p_job_id": string }; Returns: {
+              "added_by": string,"added_by_name": string,"created_at": string,"id": string,"kind": Database["public"]['Enums']["media_kind"],"title": string,"url": string
+            }[]
+                           },
 "jobs_overview":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "applications_count": number,"briefing": Database["public"]['Enums']["briefing_status"],"capacity_total": number,"city": string,"client_name": string,"day_count": number,"filled_total": number,"first_start": string,"job_id": string,"last_end": string,"location": string,"staffing": string,"status": Database["public"]['Enums']["job_status"],"title": string,"type": Database["public"]['Enums']["job_type"]
+            }[]
+                           },
+"media_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "city": string,"client_name": string,"day_count": number,"first_start": string,"fotos": number,"job_id": string,"last_added_at": string,"last_end": string,"location": string,"media_count": number,"pastas": number,"status": Database["public"]['Enums']["job_status"],"team_count": number,"title": string,"type": Database["public"]['Enums']["job_type"],"videos": number
             }[]
                            },
 "my_jobs":

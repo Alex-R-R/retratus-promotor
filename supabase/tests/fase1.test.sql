@@ -98,7 +98,7 @@ select is((select count(*) from public.clients), 2::bigint, 'Mídia lê clientes
 select is((select count(*) from public.applications), 0::bigint, 'Mídia não lê candidaturas');
 
 select lives_ok($sql$insert into public.media_items (job_id, url, kind, title) values
-('30000000-0000-0000-0000-000000000001', 'https://example.invalid/pasta', 'pasta', 'Pasta fictícia')$sql$, 'Mídia pode cadastrar links');
+('30000000-0000-0000-0000-000000000001', 'https://drive.google.com/drive/folders/pasta-ficticia', 'pasta', 'Pasta fictícia')$sql$, 'Mídia pode cadastrar links');
 
 select lives_ok($sql$update public.media_items set title = 'Pasta de teste'$sql$, 'Mídia pode editar links');
 

@@ -170,6 +170,46 @@ Nova migration `2026112600000x_fase4_*.sql`. Não reescrever migrations anterior
   - Recusa seleção sem valor.
 - Tabela de eventos: escrita direta em `event_pay_rates` (`hours`, `amount`) e `pay_settings.extra_hour_amount`. A RLS já limita ao owner, e o recálculo acima dispara sozinho.
 
+## Fase 5 · mídias (ramo `fase-5`)
+
+Nova migration `2026112700000x_fase5_*.sql`. Não reescrever migrations anteriores. Os arquivos ficam no Google Drive da empresa; o banco guarda só o link.
+
+### `media_items`
+
+- `url`: só link `https://drive.google.com/...` ou `https://docs.google.com/...`, sem espaços, até 2000 caracteres. Mensagem: "Use um link do Google Drive."
+- `title`: sem espaços nas pontas, de 1 a 120 caracteres.
+- Link repetido no mesmo trabalho é recusado (`unique (job_id, url)`). Mensagem: "Este link já está neste trabalho."
+- Só entra mídia em trabalho `publicado` ou `realizado`. Rascunho e cancelado recusam inserir e alterar. Mensagem: "Mídias só entram em trabalhos publicados ou realizados."
+- `job_id` e `added_by` não mudam depois de criados. No insert, `added_by` é sempre `auth.uid()`, mesmo que o app mande outro valor.
+- Quem pode:
+  - `owner`, `manager` e `media` aprovados leem, inserem, alteram e apagam.
+  - `promoter` e anônimo não fazem nada.
+  - O plano previa só leitura para donos e gestão. Eles mantêm a escrita para corrigir um link sem depender da conta de mídia.
+- Escrita direta na tabela, pela RLS: insert, update de `title`, `kind` e `url`, e delete.
+
+### Leitura
+
+- `media_overview(p_from, p_to)` (owner, manager, media) devolve uma linha por trabalho `publicado` ou `realizado` com algum dia que cruza o período, como em `jobs_overview`. Colunas:
+  - `job_id, title, type, status, city, location, client_name, first_start, last_end, day_count bigint`;
+  - `team_count bigint`: promotores distintos escalados;
+  - `media_count, fotos, videos, pastas` (bigint): contagem por tipo;
+  - `last_added_at timestamptz | null`.
+  - Ordem: `first_start`, depois `job_id`.
+- `job_media(p_job_id)` (owner, manager, media) devolve `id, url, kind, title, added_by, added_by_name, created_at`, da mais nova para a mais antiga. `added_by_name` é nulo se o perfil foi apagado.
+
+### Aviso
+
+A primeira mídia de um trabalho gera um aviso para os donos e a gestão aprovados, exceto quem adicionou:
+
+| Campo | Valor |
+| --- | --- |
+| `kind` | `midia` |
+| `title` | "Mídias adicionadas" |
+| `body` | "<título do trabalho>: <nome> adicionou o primeiro link." |
+| `link` | `/midias/<job_id>` |
+
+Mídias seguintes no mesmo trabalho não geram aviso.
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.

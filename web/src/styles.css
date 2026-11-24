@@ -551,3 +551,28 @@ a.par-num:hover span { color: var(--tinta); }
 .painel .agenda-barra { border-bottom-width: 0; padding-bottom: 0; }
 .agenda-barra:has(+ .resumo-valores) { border-bottom-width: 0; padding-bottom: 0; }
 .recorte { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 12px 0 0; font-size: var(--t-s); color: var(--cinza); }
+
+/* ── Fase 5 · mídias ─────────────────────────────── */
+.agenda-barra + .abas { margin-top: 18px; }
+.lista-midias > li { padding: 14px 0; }
+.midia-info { display: grid; gap: 4px; min-width: 0; }
+.midia-info .nome { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.midia-info .nome a { color: var(--tinta); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.midia-info .nome a:hover { color: var(--ouro-texto); }
+/* Tipo como marcador de folha: traço dourado e texto pequeno, sem ícone. */
+.tipo-marca { flex: none; min-width: 52px; font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--cinza); border-left: 2px solid var(--linha); padding-left: 8px; }
+.tipo-marca.tipo-pasta { border-left-color: var(--ouro); color: var(--tinta); }
+.lista-midias .meta { padding-left: 64px; }
+.lista-midias > li.midia-editando { display: block; background: var(--branco); padding: 18px; border-left: 3px solid var(--ouro); }
+.form-midia { display: grid; gap: 16px; max-width: 760px; }
+.form-midia .campo input { width: 100%; }
+.tipo-midia { border: none; margin: 0; padding: 0; min-width: 0; }
+.tipo-midia legend { font-size: var(--t-s); font-weight: 600; padding: 0; margin-bottom: 6px; }
+.linha-midias { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 20px; padding: 12px 0; border-top: 1px solid var(--linha); border-bottom: 1px solid var(--linha); font-size: var(--t-s); }
+.linha-midias span { color: var(--cinza); }
+.linha-midias a { margin-left: auto; color: var(--tinta); font-weight: 600; text-underline-offset: 3px; }
+@media (max-width: 640px) {
+  .lista-midias .meta { padding-left: 0; }
+  .midia-info .nome { flex-wrap: wrap; gap: 4px 10px; }
+  .linha-midias a { margin-left: 0; }
+}

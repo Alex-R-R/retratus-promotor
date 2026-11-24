@@ -218,11 +218,12 @@ function Dia({ data, itens, gestao }: { data: string; itens: CalRow[]; gestao: b
 }
 
 function Cartao({ r, gestao, exibidoEm, compacto = false }: { r: CalRow; gestao: boolean; exibidoEm: string; compacto?: boolean }) {
+  const midia = useAuth().profile?.role === 'media'
   const sit = situacaoDia(r)
   const comecouAntes = splitLocal(r.starts_at).date < exibidoEm
   const madrugada = splitLocal(r.starts_at).date !== splitLocal(new Date(new Date(r.ends_at).getTime() - 1).toISOString()).date
   const local = [r.location, r.city].filter(Boolean).join(', ')
-  const titulo = gestao ? <Link to={`/trabalhos/${r.job_id}`}>{r.title}</Link> : r.title
+  const titulo = gestao ? <Link to={`${midia ? '/midias' : '/trabalhos'}/${r.job_id}`}>{r.title}</Link> : r.title
 
   return (
     <article className={`cartao s-${sit}${compacto ? ' compacto' : ''}`}>

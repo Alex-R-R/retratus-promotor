@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import logo from '../assets/retratus-dark.png'
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabase'
-import { isStaff, ROLE_LABEL } from '../lib/types'
+import { isStaff, ROLE_LABEL, veMidias } from '../lib/types'
 
 export default function Shell({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth()
@@ -25,6 +25,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     { to: '/trabalhos', label: 'Trabalhos', show: !promotor },
     { to: '/vagas', label: 'Vagas', show: promotor },
     { to: '/agenda', label: 'Agenda', show: true },
+    { to: '/midias', label: 'Mídias', show: veMidias(profile) },
     { to: '/valores', label: 'Valores', show: profile?.role === 'owner' },
     { to: '/equipe', label: 'Equipe', show: staff, contador: pendentes },
     { to: '/perfil', label: 'Meu cadastro', show: true, soDesktop: true },

@@ -31,6 +31,7 @@ export default function TrabalhoDetalhe() {
   const [escolha, setEscolha] = useState<Escolha | null>(null)
   const [diasEscolhidos, setDiasEscolhidos] = useState<string[]>([])
   const [motivo, setMotivo] = useState('')
+  const [midias, setMidias] = useState<number | null>(null)
   const dialogo = useRef<HTMLDialogElement>(null)
   const dialogoCancelar = useRef<HTMLDialogElement>(null)
   const idAtual = useRef(id)
@@ -59,6 +60,13 @@ export default function TrabalhoDetalhe() {
     dialogo.current?.close(); dialogoCancelar.current?.close()
     void carregar()
   }, [carregar])
+  useEffect(() => {
+    setMidias(null)
+    let atual = true
+    supabase.from('media_items').select('id', { count: 'exact', head: true }).eq('job_id', id)
+      .then(({ count }) => { if (atual) setMidias(count ?? 0) })
+    return () => { atual = false }
+  }, [id])
   useEffect(() => {
     if (!gestao) return
     supabase.from('profiles').select('id,full_name').eq('role', 'promoter').eq('approved', true).order('full_name')
@@ -153,6 +161,14 @@ export default function TrabalhoDetalhe() {
         </ol>
         {job.notes && <p className="notas">{job.notes}</p>}
       </section>
+
+      {(job.status === 'publicado' || job.status === 'realizado') && midias !== null && (
+        <p className="linha-midias">
+          <strong>Mídias</strong>
+          <span>{midias === 0 ? 'Nenhum link do Drive ainda.' : midias === 1 ? '1 link do Drive.' : `${midias} links do Drive.`}</span>
+          <Link to={`/midias/${id}`}>{midias === 0 ? 'Adicionar link' : 'Ver mídias'}</Link>
+        </p>
+      )}
 
       {gestao && (
         <section className="secao" aria-labelledby="equipe">

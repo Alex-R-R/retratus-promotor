@@ -116,3 +116,31 @@ export const duracao = (h: number) => {
   const inteiro = Math.floor(n), min = Math.round((n - inteiro) * 60)
   return min ? `${inteiro}h${String(min).padStart(2, '0')}` : `${inteiro}h`
 }
+
+// Fase 5 · mídias (docs/CONTRATO-DADOS.md). Arquivos no Google Drive; o banco guarda o link.
+export type MediaKind = Enums['media_kind']
+export const MIDIA_LABEL: Record<MediaKind, string> = { foto: 'Foto', video: 'Vídeo', pasta: 'Pasta' }
+export interface MediaOverview {
+  job_id: string; title: string; type: JobType; status: JobStatus
+  city: string | null; location: string | null; client_name: string | null
+  first_start: string; last_end: string; day_count: number; team_count: number
+  media_count: number; fotos: number; videos: number; pastas: number; last_added_at: string | null
+}
+export interface MediaItem {
+  id: string; url: string; kind: MediaKind; title: string
+  added_by: string | null; added_by_name: string | null; created_at: string
+}
+
+/** Mesma regra do banco: só links do Google Drive, sem espaços. */
+export const linkDrive = (url: string) => /^https:\/\/(drive|docs)\.google\.com\/\S+$/.test(url) && url.length <= 2000
+
+/** Pasta pelo formato do link; o resto a pessoa escolhe. */
+export const tipoPeloLink = (url: string): MediaKind | null => /\/folders\//.test(url) ? 'pasta' : null
+
+/** "3 fotos, 1 vídeo" a partir das contagens por tipo. */
+export function resumoMidias(m: Pick<MediaOverview, 'fotos' | 'videos' | 'pastas'>) {
+  const partes: string[] = []
+  const add = (n: number, um: string, varios: string) => { if (Number(n)) partes.push(`${Number(n)} ${Number(n) === 1 ? um : varios}`) }
+  add(m.pastas, 'pasta', 'pastas'); add(m.fotos, 'foto', 'fotos'); add(m.videos, 'vídeo', 'vídeos')
+  return partes.join(', ')
+}

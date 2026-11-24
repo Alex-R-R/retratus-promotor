@@ -20,3 +20,6 @@ export const LINK_LABEL: Record<PersonLink, string> = {
 }
 
 export const isStaff = (p: Profile | null) => !!p && p.approved && (p.role === 'owner' || p.role === 'manager')
+
+/** Quem vê a área de mídias: donos, gestão e social media aprovados. */
+export const veMidias = (p: Profile | null) => !!p && p.approved && (p.role === 'owner' || p.role === 'manager' || p.role === 'media')

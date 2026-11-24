@@ -2,7 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuth } from './auth/AuthProvider'
 import { supabaseConfigured } from './lib/supabase'
-import { isStaff } from './lib/types'
+import { isStaff, veMidias } from './lib/types'
 import Shell from './components/Shell'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
@@ -20,19 +20,21 @@ import Vagas from './pages/Vagas'
 import VagaDetalhe from './pages/VagaDetalhe'
 import Agenda from './pages/Agenda'
 import Valores from './pages/Valores'
+import Midias from './pages/Midias'
+import MidiaTrabalho from './pages/MidiaTrabalho'
 
 /** Links antigos de aviso (/jobs/<id>) levam à tela certa de cada perfil. */
 function JobsLegado() {
   const { profile } = useAuth()
   const id = useLocation().pathname.split('/').pop()
-  return <Navigate to={profile?.role === 'promoter' ? `/vagas/${id}` : `/trabalhos/${id}`} replace />
+  return <Navigate to={profile?.role === 'promoter' ? `/vagas/${id}` : profile?.role === 'media' ? `/midias/${id}` : `/trabalhos/${id}`} replace />
 }
 
 function Carregando() {
   return <div className="boot" role="status"><span className="boot-frame" aria-hidden="true" />Carregando…</div>
 }
 
-type Acesso = 'gestao' | 'trabalhos' | 'promotor' | 'dono'
+type Acesso = 'gestao' | 'trabalhos' | 'promotor' | 'dono' | 'midias'
 
 function Protegida({ children, staffOnly = false, acesso }: { children: ReactNode; staffOnly?: boolean; acesso?: Acesso }) {
   const { session, profile, loading } = useAuth()
@@ -43,6 +45,7 @@ function Protegida({ children, staffOnly = false, acesso }: { children: ReactNod
   if (!profile.approved) return <Navigate to="/aguardando" replace />
   const pode = acesso === 'dono' ? profile.role === 'owner'
     : acesso === 'promotor' ? profile.role === 'promoter'
+    : acesso === 'midias' ? veMidias(profile)
     : acesso === 'trabalhos' ? profile.role !== 'promoter'
     : (staffOnly || acesso === 'gestao') ? isStaff(profile) : true
   if (!pode) return <Navigate to="/" replace />
@@ -76,6 +79,8 @@ export default function App() {
       <Route path="/vagas/:id" element={<Protegida acesso="promotor"><VagaDetalhe /></Protegida>} />
       <Route path="/agenda" element={<Protegida><Agenda /></Protegida>} />
       <Route path="/valores" element={<Protegida acesso="dono"><Valores /></Protegida>} />
+      <Route path="/midias" element={<Protegida acesso="midias"><Midias /></Protegida>} />
+      <Route path="/midias/:id" element={<Protegida acesso="midias"><MidiaTrabalho /></Protegida>} />
       <Route path="/meus-trabalhos" element={<Navigate to="/agenda" replace />} />
       <Route path="/jobs/:id" element={<Protegida><JobsLegado /></Protegida>} />
       <Route path="*" element={<Navigate to="/" replace />} />

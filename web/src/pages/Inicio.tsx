@@ -4,6 +4,8 @@ import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabase'
 import { isStaff } from '../lib/types'
 import Painel from '../components/Painel'
+import { rpc, type MediaOverview } from '../lib/jobs'
+import { inicioDoMes, meiaNoite, proximoMes, todayLocal } from '../lib/time'
 
 interface Aviso { id: string; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string }
 
@@ -15,6 +17,18 @@ export default function Inicio() {
   const [avisos, setAvisos] = useState<Aviso[] | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [pendentes, setPendentes] = useState(0)
+  const midia = profile?.role === 'media' && profile.approved
+  const [semMidia, setSemMidia] = useState(0)
+
+  // Social media: quantos trabalhos deste mês já terminaram sem nenhum link (mesma conta da tela Mídias).
+  useEffect(() => {
+    if (!midia) return
+    const mes = inicioDoMes(todayLocal())
+    rpc<MediaOverview[]>('media_overview', { p_from: meiaNoite(mes), p_to: meiaNoite(proximoMes(mes)) }).then(({ data }) => {
+      const agora = Date.now()
+      setSemMidia((data ?? []).filter(m => !Number(m.media_count) && new Date(m.last_end).getTime() <= agora).length)
+    })
+  }, [midia])
 
   useEffect(() => {
     if (!profile) return
@@ -46,7 +60,7 @@ export default function Inicio() {
       <div className="cabecalho">
         <div>
           <h1 className="titulo">Olá, {primeiroNome}</h1>
-          <p className="subtitulo">{staff ? 'Como estão os trabalhos do período, quem está trabalhando e os avisos da operação.' : 'Seus avisos de vagas e de seleção para trabalhos.'}</p>
+          <p className="subtitulo">{staff ? 'Como estão os trabalhos do período, quem está trabalhando e os avisos da operação.' : midia ? 'Os trabalhos que precisam de fotos e vídeos e os avisos da operação.' : 'Seus avisos de vagas e de seleção para trabalhos.'}</p>
         </div>
       </div>
 
@@ -54,6 +68,13 @@ export default function Inicio() {
         <div className="pendencia">
           <p><strong>{pendentes}</strong>{pendentes === 1 ? 'cadastro aguarda aprovação' : 'cadastros aguardam aprovação'}</p>
           <Link className="btn" to="/equipe">Ver cadastros</Link>
+        </div>
+      )}
+
+      {midia && semMidia > 0 && (
+        <div className="pendencia">
+          <p><strong>{semMidia}</strong>{semMidia === 1 ? 'trabalho deste mês já aconteceu e está sem mídia' : 'trabalhos deste mês já aconteceram e estão sem mídia'}</p>
+          <Link className="btn" to="/midias?f=sem">Ver trabalhos</Link>
         </div>
       )}
 
@@ -69,7 +90,7 @@ export default function Inicio() {
         {avisos?.length === 0 && (
           <div className="vazio">
             <strong>Nenhum aviso por enquanto.</strong>
-            {staff ? 'Quando alguém se cadastrar ou se candidatar, o aviso aparece aqui.' : 'Quando a Retratus abrir vagas ou selecionar você para um trabalho, o aviso aparece aqui.'}
+            {staff ? 'Quando alguém se cadastrar ou se candidatar, o aviso aparece aqui.' : midia ? 'Quando houver um aviso para você, ele aparece aqui.' : 'Quando a Retratus abrir vagas ou selecionar você para um trabalho, o aviso aparece aqui.'}
           </div>
         )}
         {!!avisos?.length && (
