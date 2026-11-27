@@ -15,7 +15,6 @@ export default function AcessoLayout({ titulo, subtitulo, children, rodape }: Pr
       <div className="acesso-marca">
         <img src={logo} alt="Retratus" />
         <p>Vagas e escalas de eventos e ações.</p>
-        <small>Promotores se candidatam pelo celular. A gestão escolhe a equipe e todos acompanham a agenda no mesmo lugar.</small>
       </div>
       <div>
         <section className="moldura" aria-labelledby="titulo-acesso">

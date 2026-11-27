@@ -98,7 +98,6 @@ img { display: block; max-width: 100%; }
 .acesso-marca { display: grid; gap: 28px; align-content: center; }
 .acesso-marca img { width: 132px; mix-blend-mode: lighten; margin-left: -18px; }
 .acesso-marca p { font-family: var(--condensada); font-stretch: 72%; font-weight: 600; font-size: clamp(30px, 4vw, 52px); line-height: 1.05; max-width: 13ch; color: #f3eee2; }
-.acesso-marca small { color: #a49d8d; font-size: var(--t-s); max-width: 40ch; line-height: 1.6; }
 
 .moldura {
   --gap-base: 26px;     /* trecho inferior da borda direita */
@@ -135,7 +134,6 @@ img { display: block; max-width: 100%; }
   .acesso { grid-template-columns: 1fr; gap: 36px; padding: 32px 16px 48px; align-items: start; }
   .acesso-marca { gap: 16px; }
   .acesso-marca img { width: 88px; margin-left: -12px; }
-  .acesso-marca small { display: none; }
   .moldura { padding: 28px 22px 40px; margin-right: 28px; }
   .moldura-acoes .btn-ouro { margin-right: -46px; }
 }
