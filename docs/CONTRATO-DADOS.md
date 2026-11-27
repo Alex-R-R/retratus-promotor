@@ -226,9 +226,10 @@ Publicação, e-mails, domínio e backup estão em `docs/PUBLICACAO.md`.
 
 Migration `20261129000001_revisao_cancelamento_agenda.sql`, testes em `supabase/tests/fase7.test.sql`:
 
-- **`cancel_job`** passa a recusar:
-  - trabalho com algum dia já começado. Mensagem: "Trabalho que já começou não pode ser cancelado."
+- **Cancelamento** (trigger em `jobs`, vale para `cancel_job` e para escrita direta) passa a recusar:
+  - trabalho publicado com algum dia já começado. Mensagem: "Trabalho que já começou não pode ser cancelado." Rascunho com data passada ainda pode ser cancelado.
   - trabalho com pagamento marcado como pago. Mensagem: "Este trabalho tem pagamento feito. Os donos precisam desmarcar o pagamento antes de cancelar."
+- **Pagamento** (trigger em `payments`, vale para `set_paid` e para escrita direta): não marca como pago seleção de trabalho cancelado. Mensagem: "Trabalho cancelado não recebe pagamento." Escritas em `payments` passam pelo mesmo `schedule_lock`.
 - **`calendar`**: o promotor também recebe os dias de `rascunho` em que foi escalado. Mídia continua sem rascunhos.
 
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)

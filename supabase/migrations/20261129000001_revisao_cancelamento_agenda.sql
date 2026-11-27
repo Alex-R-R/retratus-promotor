@@ -1,38 +1,59 @@
 -- Revisão geral (Claude). Revisão: Codex.
 
 -- 1. Cancelar tira o trabalho de todos os totais de valores. Por isso só vale para
---    trabalho que ainda não começou e que não tem pagamento feito.
-create or replace function public.cancel_job(p_job_id uuid, p_reason text) returns void
+--    trabalho publicado que ainda não começou e que não tem pagamento feito.
+--    A regra fica em trigger para valer também na escrita direta em jobs
+--    (política jobs_manage), não só em cancel_job. O lock_jobs (BEFORE STATEMENT)
+--    já pegou o schedule_lock antes desta checagem.
+create function retratus_private.guard_job_cancel() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
 begin
-  if not coalesce(public.current_role() in ('owner', 'manager'), false) then
-    raise insufficient_privilege;
-  end if;
-  if p_reason is null or p_reason !~ '[^[:space:]]' then
-    raise check_violation using message = 'Informe o motivo do cancelamento.';
-  end if;
-
-  update retratus_private.schedule_lock set id = true where id;
-  if exists (
-    select 1 from public.job_days d where d.job_id = p_job_id and d.starts_at <= clock_timestamp()
+  -- Rascunho nunca foi trabalhado; um rascunho com data passada ainda pode ser cancelado.
+  if old.status <> 'rascunho' and exists (
+    select 1 from public.job_days d where d.job_id = new.id and d.starts_at <= clock_timestamp()
   ) then
     raise check_violation using message = 'Trabalho que já começou não pode ser cancelado.';
   end if;
   if exists (
     select 1 from public.selections s join public.payments pay on pay.selection_id = s.id
-    where s.job_id = p_job_id and pay.paid_at is not null
+    where s.job_id = new.id and pay.paid_at is not null
   ) then
     raise check_violation using message = 'Este trabalho tem pagamento feito. Os donos precisam desmarcar o pagamento antes de cancelar.';
   end if;
-
-  update public.jobs set status = 'cancelado', cancel_reason = p_reason
-  where id = p_job_id and status in ('rascunho', 'publicado');
-  if not found then
-    raise check_violation using message = 'Somente rascunhos e trabalhos publicados podem ser cancelados.';
-  end if;
+  return new;
 end;
 $$;
+
+create trigger guard_job_cancel before update of status on public.jobs
+for each row when (new.status = 'cancelado' and old.status is distinct from 'cancelado')
+execute function retratus_private.guard_job_cancel();
+
+-- O outro lado: pagamento não é marcado como feito em trabalho cancelado, nem por
+-- set_paid nem por escrita direta do dono. O lock serializa com o cancelamento.
+create trigger lock_payments before insert or update or delete on public.payments
+for each statement execute function retratus_private.lock_schedule();
+
+create function retratus_private.guard_paid_cancelled() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+begin
+  if exists (
+    select 1 from public.selections s join public.jobs j on j.id = s.job_id
+    where s.id = new.selection_id and j.status = 'cancelado'
+  ) then
+    raise check_violation using message = 'Trabalho cancelado não recebe pagamento.';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger guard_paid_cancelled before insert or update of paid_at on public.payments
+for each row when (new.paid_at is not null)
+execute function retratus_private.guard_paid_cancelled();
+
+revoke execute on function retratus_private.guard_job_cancel(), retratus_private.guard_paid_cancelled()
+from public, anon, authenticated, service_role;
 
 -- 2. A gestão pode escalar em rascunho, e o promotor recebe o aviso na hora.
 --    Agora ele também vê esses dias na agenda. Mídia continua sem ver rascunhos.

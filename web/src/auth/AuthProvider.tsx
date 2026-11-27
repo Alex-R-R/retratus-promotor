@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../lib/types'
@@ -20,11 +20,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [profileError, setProfileError] = useState<string | null>(null)
 
+  const ultimaConsulta = useRef(0)
+
   const loadProfile = useCallback(async (s: Session | null) => {
+    const consulta = ++ultimaConsulta.current
     if (!s) { setProfile(null); return }
     const { data, error } = await supabase.from('profiles').select('*').eq('id', s.user.id).maybeSingle()
-    // Falha de rede não apaga o perfil já carregado: a tela continua usável e o erro aparece.
-    if (error) { setProfileError('Não foi possível carregar seu cadastro. Confira a internet e tente de novo.'); return }
+    if (consulta !== ultimaConsulta.current) return  // resposta de uma sessão anterior
+    if (error) {
+      // Falha de rede não apaga o perfil já carregado da mesma pessoa; o de outra pessoa sai.
+      setProfile(p => p?.id === s.user.id ? p : null)
+      setProfileError('Não foi possível carregar seu cadastro. Confira a internet e tente de novo.')
+      return
+    }
     setProfileError(null)
     setProfile((data as Profile | null) ?? null)
   }, [])
