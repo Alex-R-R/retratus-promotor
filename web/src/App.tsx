@@ -39,10 +39,18 @@ function Carregando() {
 type Acesso = 'gestao' | 'trabalhos' | 'promotor' | 'dono' | 'midias'
 
 function Protegida({ children, staffOnly = false, acesso }: { children: ReactNode; staffOnly?: boolean; acesso?: Acesso }) {
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading, profileError, refreshProfile } = useAuth()
   const location = useLocation()
   if (loading) return <Carregando />
   if (!session) return <Navigate to="/entrar" replace state={{ from: location.pathname + location.search }} />
+  if (!profile && profileError) {
+    return (
+      <div className="boot" role="alert">
+        <p>{profileError}</p>
+        <button className="btn btn-ouro" onClick={() => void refreshProfile()}>Tentar de novo</button>
+      </div>
+    )
+  }
   if (!profile) return <Carregando />
   if (!profile.approved) return <Navigate to="/aguardando" replace />
   const pode = acesso === 'dono' ? profile.role === 'owner'

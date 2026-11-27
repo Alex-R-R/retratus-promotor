@@ -27,7 +27,7 @@ export default function Perfil() {
 
   async function trocarSenha(e: FormEvent) {
     e.preventDefault()
-    if (senha.length < 6) return setMsgSenha({ ok: false, texto: 'A senha precisa ter pelo menos 6 caracteres.' })
+    if (senha.length < 8) return setMsgSenha({ ok: false, texto: 'A senha precisa ter pelo menos 8 caracteres.' })
     const { error } = await supabase.auth.updateUser({ password: senha })
     if (error) return setMsgSenha({ ok: false, texto: authErrorMessage(error.message) })
     setSenha('')

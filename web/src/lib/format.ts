@@ -21,7 +21,7 @@ export function authErrorMessage(message: string) {
   if (m.includes('invalid login credentials')) return 'E-mail ou senha não conferem. Confira e tente de novo.'
   if (m.includes('email not confirmed')) return 'Confirme seu e-mail pelo link que enviamos antes de entrar.'
   if (m.includes('already registered')) return 'Este e-mail já tem cadastro. Entre ou recupere a senha.'
-  if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.'
+  if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 8 caracteres.'
   if (m.includes('rate limit')) return 'Muitas tentativas seguidas. Aguarde alguns minutos.'
   if (m.includes('failed to fetch')) return 'Sem conexão com o servidor. Verifique a internet e tente de novo.'
   return message

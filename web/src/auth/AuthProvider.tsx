@@ -23,8 +23,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = useCallback(async (s: Session | null) => {
     if (!s) { setProfile(null); return }
     const { data, error } = await supabase.from('profiles').select('*').eq('id', s.user.id).maybeSingle()
-    if (error) setProfileError('Não foi possível carregar seu cadastro. Tente sair e entrar de novo.')
-    else setProfileError(null)
+    // Falha de rede não apaga o perfil já carregado: a tela continua usável e o erro aparece.
+    if (error) { setProfileError('Não foi possível carregar seu cadastro. Confira a internet e tente de novo.'); return }
+    setProfileError(null)
     setProfile((data as Profile | null) ?? null)
   }, [])
 

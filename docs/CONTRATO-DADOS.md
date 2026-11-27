@@ -222,6 +222,15 @@ Migration `20261128000001_fase6_producao.sql`:
 
 Publicação, e-mails, domínio e backup estão em `docs/PUBLICACAO.md`.
 
+## Revisão geral (ramo `revisao-geral`)
+
+Migration `20261129000001_revisao_cancelamento_agenda.sql`, testes em `supabase/tests/fase7.test.sql`:
+
+- **`cancel_job`** passa a recusar:
+  - trabalho com algum dia já começado. Mensagem: "Trabalho que já começou não pode ser cancelado."
+  - trabalho com pagamento marcado como pago. Mensagem: "Este trabalho tem pagamento feito. Os donos precisam desmarcar o pagamento antes de cancelar."
+- **`calendar`**: o promotor também recebe os dias de `rascunho` em que foi escalado. Mídia continua sem rascunhos.
+
 ## Usuários locais de teste (só `supabase/seed.sql`, senha `demo123`)
 
 `dona@retratus.test` (owner), `gestao@retratus.test` (manager), `midia@retratus.test` (media), `promotor01@retratus.test` … `promotor06@retratus.test` (promoter aprovados), `novo@retratus.test` (promoter não aprovado). Dados fictícios.

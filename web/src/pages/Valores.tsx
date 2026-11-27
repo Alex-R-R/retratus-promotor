@@ -246,6 +246,7 @@ function TabelaEventos({ aoMudar }: { aoMudar: () => void }) {
   }
 
   async function remover(h: number) {
+    if (!confirm(`Remover a faixa de ${h}h? Eventos dessa duração ainda não pagos e sem ajuste ficam sem valor.`)) return
     const { error } = await supabase.from('event_pay_rates').delete().eq('hours', h)
     void feito(error, `Faixa de ${h}h removida.`)
   }

@@ -91,6 +91,9 @@ export default function TrabalhoForm() {
       const { data, error } = await supabase.from('clients').insert({ name: novoCliente.trim() }).select('id').single()
       if (error || !data) { setSalvando(false); return setErro(dbError(error, 'Não foi possível cadastrar o contratante.')) }
       client_id = data.id
+      // Se salvar o trabalho falhar, a próxima tentativa usa este contratante em vez de criar outro igual.
+      setClientes(cs => [...cs, { id: data.id, name: novoCliente.trim() }].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')))
+      setClienteId(data.id); setNovoCliente('')
     }
     const { data, error } = await rpc<string>('save_job', {
       p_job_id: id ?? null,

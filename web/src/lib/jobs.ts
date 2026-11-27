@@ -74,8 +74,8 @@ export interface CalRow {
 /** Situação da equipe num dia: define a cor da marcação no calendário. */
 export function situacaoDia(r: CalRow): 'cancelado' | 'rascunho' | 'completo' | 'aberto' | 'meu' {
   if (r.status === 'cancelado') return 'cancelado'
+  if (!r.slots) return 'meu'  // promotor: a própria escala, inclusive em rascunho
   if (r.status === 'rascunho') return 'rascunho'
-  if (!r.slots) return 'meu'
   const cap = r.slots.reduce((n, s) => n + s.capacity, 0)
   const ocup = r.slots.reduce((n, s) => n + s.filled, 0)
   return cap > 0 && ocup >= cap ? 'completo' : 'aberto'

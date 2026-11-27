@@ -19,7 +19,7 @@ export default function Cadastro() {
     const fone = onlyDigits(telefone)
     if (nome.trim().length < 3) return setErro('Informe seu nome completo.')
     if (fone.length < 10 || fone.length > 11) return setErro('Informe o telefone com DDD, por exemplo (91) 98888-7777.')
-    if (senha.length < 6) return setErro('A senha precisa ter pelo menos 6 caracteres.')
+    if (senha.length < 8) return setErro('A senha precisa ter pelo menos 8 caracteres.')
     setErro(null); setEnviando(true)
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -64,7 +64,7 @@ export default function Cadastro() {
         <div className="campo">
           <label htmlFor="senha">Senha</label>
           <input id="senha" type="password" autoComplete="new-password" required value={senha} onChange={e => setSenha(e.target.value)} />
-          <span className="dica">Pelo menos 6 caracteres.</span>
+          <span className="dica">Pelo menos 8 caracteres.</span>
         </div>
         {erro && <p className="erro" role="alert">{erro}</p>}
         <div className="moldura-acoes">
