@@ -94,7 +94,7 @@ where email = 'email.do.dono@exemplo.com';
 ```
 
 3. Entre de novo no app. A partir daí, os outros cadastros são aprovados pela tela **Equipe**. Lá também se define quem é dono, gestão, social media ou promotor.
-4. Na tela **Valores**, preencha a tabela de eventos: 4h = R$ 130, mais o valor de 3h e o da hora adicional quando estiverem definidos.
+4. Na tela **Valores**, preencha a tabela de eventos: 3h = R$ 97,50, 4h = R$ 130 e hora adicional = R$ 32,50. Os valores de 3h e da hora adicional são provisórios (proporcionais a R$ 32,50 por hora) e os donos podem mudar a qualquer momento na mesma tela.
 
 ## 6. Backup diário **(donos)**
 

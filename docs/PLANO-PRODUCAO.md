@@ -121,11 +121,11 @@ Combinação: cada frente em um ramo próprio, revisão cruzada antes de juntar.
 | Tema | Decisão | Impacto |
 | --- | --- | --- |
 | Briefing | A gestão preenche e marca "Briefing fechado". O contratante não entra no app | Sem perfil de contratante; `clients` é só cadastro |
-| Valor do promotor | **Eventos**: tabela por faixa de horas (4h = R$ 130; 3h e hora adicional a definir pelos donos). **Ações**: valor digitado por trabalho, porque varia muito. Donos podem ajustar qualquer valor | `pay_rules` só para eventos, editável na tela dos donos; `payments` guarda o valor final e se veio da tabela ou foi ajustado |
+| Valor do promotor | **Eventos**: tabela por faixa de horas (4h = R$ 130; provisórios: 3h = R$ 97,50 e hora adicional = R$ 32,50). **Ações**: valor digitado por trabalho, porque varia muito. Donos podem ajustar qualquer valor | `pay_rules` só para eventos, editável na tela dos donos; `payments` guarda o valor final e se veio da tabela ou foi ajustado |
 | Login | E-mail e senha. Telefone fica no cadastro para contato. Cadastro precisa de aprovação dos donos | Recuperação de senha por e-mail, sem custo de SMS |
 | Mídias | Google Drive da empresa. O app guarda o link da pasta ou arquivo por trabalho | `media_items` guarda link, tipo e quem adicionou; nada de arquivo no Supabase. O plano grátis basta |
 
 ### Ainda a confirmar com os donos
 
-- Valor do evento de 3h e da hora adicional.
-- Se a hora adicional vale também para eventos acima de 4h (ex.: 6h = 130 + 2 × adicional).
+- Valor do evento de 3h e da hora adicional. Provisório: proporcional aos R$ 130 de 4h (R$ 32,50 por hora), ajustável na tela **Valores**.
+- A hora adicional vale para eventos acima de 4h (ex.: 6h = 130 + 2 × 32,50 = R$ 195). É assim que o app já calcula.
