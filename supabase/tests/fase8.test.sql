@@ -26,6 +26,10 @@ select throws_ok($$insert into action_services (name) values (' Panfletagem ')$$
 insert into jobs (id, type, title) values
   ('f8000000-0000-0000-0001-000000000001', 'acao', 'Ação com serviço próprio'),
   ('f8000000-0000-0000-0001-000000000002', 'evento', 'Evento padrão');
+-- Evento precisa de exatamente um dia (trava já existente, também adiada).
+insert into job_days (job_id, starts_at, ends_at) values
+  ('f8000000-0000-0000-0001-000000000001', '2099-09-01 18:00-03', '2099-09-01 22:00-03'),
+  ('f8000000-0000-0000-0001-000000000002', '2099-09-02 18:00-03', '2099-09-02 22:00-03');
 select lives_ok($$insert into job_slots (job_id, equipment, capacity)
   values ('f8000000-0000-0000-0001-000000000001', 'Panfletagem', 2), ('f8000000-0000-0000-0001-000000000001', 'Totem', 1);
   set constraints all immediate$$, 'Ação aceita serviço digitado junto com equipamento padrão');
