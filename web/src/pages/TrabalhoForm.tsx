@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { dbError, EQUIPAMENTOS, rpc, type Briefing, type JobType } from '../lib/jobs'
+import { dbError, EQUIPAMENTOS, rpc, type Briefing, type ClienteTipo, type JobType } from '../lib/jobs'
 import { addDays, crossesMidnight, dataLonga, splitLocal, todayLocal, toRange } from '../lib/time'
 
 interface DiaForm { id?: string; date: string; start: string; end: string }
-interface Cliente { id: string; name: string }
+interface Cliente { id: string; name: string; kind: ClienteTipo; listed: boolean }
+
+const PADRAO: readonly string[] = EQUIPAMENTOS
 
 /** Campos de data/hora vazios ou incompletos não podem chegar ao toRange (Date inválida lança erro). */
 const diaCompleto = (d: DiaForm) => /^\d{4}-\d{2}-\d{2}$/.test(d.date) && /^\d{2}:\d{2}$/.test(d.start) && /^\d{2}:\d{2}$/.test(d.end)
@@ -23,6 +25,9 @@ export default function TrabalhoForm() {
   const [clienteId, setClienteId] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [novoCliente, setNovoCliente] = useState('')
+  const [guardados, setGuardados] = useState<string[]>([])
+  const [outroServico, setOutroServico] = useState('')
+  const [guardarServico, setGuardarServico] = useState(false)
   const [local, setLocal] = useState('')
   const [cidade, setCidade] = useState('Belém')
   const [briefing, setBriefing] = useState<Briefing>('aguardando')
@@ -34,7 +39,8 @@ export default function TrabalhoForm() {
   const [salvando, setSalvando] = useState(false)
 
   useEffect(() => {
-    supabase.from('clients').select('id,name').order('name').then(({ data }) => setClientes(data ?? []))
+    supabase.from('clients').select('id,name,kind,listed').order('name').then(({ data }) => setClientes(data ?? []))
+    supabase.from('action_services').select('name').order('name').then(({ data }) => setGuardados((data ?? []).map(x => x.name)))
     if (!id) return
     Promise.all([
       supabase.from('jobs').select('*').eq('id', id).single(),
@@ -54,6 +60,26 @@ export default function TrabalhoForm() {
   function mudarTipo(t: JobType) {
     setTipo(t)
     if (t === 'evento' && dias.length > 1) setDias([dias[0]])
+    // Evento só usa os equipamentos padrão.
+    if (t === 'evento') setVagas(v => Object.fromEntries(Object.entries(v).filter(([eq]) => PADRAO.includes(eq))))
+  }
+
+  // Lista fixa do tipo do trabalho, mais o contratante já ligado a ele (mesmo que avulso).
+  const clientesVisiveis = clientes.filter(c => c.id === clienteId || (c.listed && (c.kind === 'ambos' || c.kind === tipo)))
+
+  const opcoes = tipo === 'evento' ? [...PADRAO] : [...new Set([...PADRAO, ...guardados, ...Object.keys(vagas)])]
+
+  async function adicionarServico() {
+    const nome = outroServico.trim().replace(/\s+/g, ' ')
+    if (nome.length < 2 || nome.length > 60) return setErro('O nome do serviço deve ter de 2 a 60 letras.')
+    const final = opcoes.find(o => o.toLocaleLowerCase('pt-BR') === nome.toLocaleLowerCase('pt-BR')) ?? nome
+    if (guardarServico && !guardados.includes(final)) {
+      const { error } = await supabase.from('action_services').insert({ name: final })
+      if (error && error.code !== '23505') return setErro(dbError(error, 'Não foi possível guardar o serviço.'))
+      setGuardados(g => [...g, final].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+    }
+    setErro(null); setOutroServico(''); setGuardarServico(false)
+    setVagas(v => ({ ...v, [final]: Math.max(v[final] ?? 0, 1) }))
   }
 
   const alterarDia = (i: number, campo: keyof DiaForm, valor: string) => setDias(ds => ds.map((d, k) => k === i ? { ...d, [campo]: valor } : d))
@@ -81,18 +107,18 @@ export default function TrabalhoForm() {
     if (dias.some(d => !diaCompleto(d))) return setErro('Preencha data, início e fim de todos os dias.')
     if (dias.some(d => d.start === d.end)) return setErro('O início e o fim de um dia não podem ser iguais.')
     if (new Set(dias.map(d => d.date)).size !== dias.length) return setErro('Há dias repetidos. Deixe um horário por data.')
-    const slots = Object.entries(vagas).filter(([, n]) => n > 0).map(([equipment, capacity]) => ({ equipment, capacity }))
-    if (!slots.length) return setErro('Escolha pelo menos um equipamento e quantas pessoas ele precisa.')
+    const slots = Object.entries(vagas).filter(([eq, n]) => n > 0 && opcoes.includes(eq)).map(([equipment, capacity]) => ({ equipment, capacity }))
+    if (!slots.length) return setErro(tipo === 'evento' ? 'Escolha pelo menos um equipamento e quantas pessoas ele precisa.' : 'Escolha pelo menos um serviço e quantas pessoas ele precisa.')
 
     setErro(null); setSalvando(true)
     let client_id: string | null = clienteId || null
     if (clienteId === '__novo') {
       if (!novoCliente.trim()) { setSalvando(false); return setErro('Informe o nome do novo contratante.') }
-      const { data, error } = await supabase.from('clients').insert({ name: novoCliente.trim() }).select('id').single()
+      const { data, error } = await supabase.from('clients').insert({ name: novoCliente.trim(), kind: tipo, listed: false }).select('id').single()
       if (error || !data) { setSalvando(false); return setErro(dbError(error, 'Não foi possível cadastrar o contratante.')) }
       client_id = data.id
       // Se salvar o trabalho falhar, a próxima tentativa usa este contratante em vez de criar outro igual.
-      setClientes(cs => [...cs, { id: data.id, name: novoCliente.trim() }].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')))
+      setClientes(cs => [...cs, { id: data.id, name: novoCliente.trim(), kind: tipo, listed: false }].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')))
       setClienteId(data.id); setNovoCliente('')
     }
     const { data, error } = await rpc<string>('save_job', {
@@ -139,14 +165,15 @@ export default function TrabalhoForm() {
               <label htmlFor="cliente">Contratante</label>
               <select id="cliente" value={clienteId} onChange={e => setClienteId(e.target.value)}>
                 <option value="">Sem contratante informado</option>
-                {clientes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                <option value="__novo">Cadastrar novo contratante…</option>
+                {clientesVisiveis.map(c => <option key={c.id} value={c.id}>{c.listed ? c.name : `${c.name} (avulso)`}</option>)}
+                <option value="__novo">Outro contratante, só para este trabalho…</option>
               </select>
             </div>
             {clienteId === '__novo' && (
               <div className="campo">
-                <label htmlFor="novo-cliente">Nome do novo contratante</label>
+                <label htmlFor="novo-cliente">Nome do contratante</label>
                 <input id="novo-cliente" value={novoCliente} onChange={e => setNovoCliente(e.target.value)} />
+                <span className="dica">Não entra na lista. Para usar de novo, adicione em Contratantes.</span>
               </div>
             )}
           </div>
@@ -208,10 +235,10 @@ export default function TrabalhoForm() {
         </fieldset>
 
         <fieldset className="grupo">
-          <legend>Vagas por equipamento</legend>
+          <legend>{tipo === 'evento' ? 'Vagas por equipamento' : 'Vagas por serviço'}</legend>
           <p className="dica">Quantas pessoas cada equipamento precisa{tipo === 'acao' ? ' em cada dia' : ''}. Deixe zero nos que não vão.</p>
           <ul className="equipamentos">
-            {EQUIPAMENTOS.map(eq => {
+            {opcoes.map(eq => {
               const n = vagas[eq] ?? 0
               return (
                 <li key={eq} className={n > 0 ? 'ativo' : ''}>
@@ -225,6 +252,21 @@ export default function TrabalhoForm() {
               )
             })}
           </ul>
+          {tipo === 'acao' && (
+            <div className="outro-servico">
+              <div className="campo">
+                <label htmlFor="outro-servico">Outro serviço</label>
+                <input id="outro-servico" value={outroServico} maxLength={60} placeholder="Ex.: Panfletagem"
+                  onChange={e => setOutroServico(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void adicionarServico() } }} />
+              </div>
+              <label className="check">
+                <input type="checkbox" checked={guardarServico} onChange={e => setGuardarServico(e.target.checked)} />
+                Guardar para as próximas ações
+              </label>
+              <button type="button" className="btn btn-linha" onClick={() => void adicionarServico()} disabled={!outroServico.trim()}>Adicionar serviço</button>
+            </div>
+          )}
         </fieldset>
 
         {erro && <p className="erro" role="alert">{erro}</p>}

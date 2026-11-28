@@ -14,6 +14,7 @@ import SemConfiguracao from './pages/SemConfiguracao'
 
 // Telas carregadas sob demanda: o celular baixa só o que vai abrir.
 const Equipe = lazy(() => import('./pages/Equipe'))
+const Contratantes = lazy(() => import('./pages/Contratantes'))
 const Perfil = lazy(() => import('./pages/Perfil'))
 const Trabalhos = lazy(() => import('./pages/Trabalhos'))
 const TrabalhoForm = lazy(() => import('./pages/TrabalhoForm'))
@@ -80,6 +81,7 @@ export default function App() {
       <Route path="/aguardando" element={<Aguardando />} />
       <Route path="/" element={<Protegida><Inicio /></Protegida>} />
       <Route path="/equipe" element={<Protegida staffOnly><Equipe /></Protegida>} />
+      <Route path="/contratantes" element={<Protegida staffOnly><Contratantes /></Protegida>} />
       <Route path="/perfil" element={<Protegida><Perfil /></Protegida>} />
       <Route path="/trabalhos" element={<Protegida acesso="trabalhos"><Trabalhos /></Protegida>} />
       <Route path="/trabalhos/novo" element={<Protegida acesso="gestao"><TrabalhoForm /></Protegida>} />

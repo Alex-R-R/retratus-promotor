@@ -23,7 +23,13 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "applications": {
+            "action_services": {
+                  Row: { "created_at": string,"name": string }
+                  ComputedFields: never
+                  Insert: { "created_at"?: string,"name": string }
+                  Update: { "created_at"?: string,"name"?: string }
+                  Relationships: []
+                },"applications": {
                   Row: {
                     "created_at": string,"equipment": (string)[],"id": string,"job_id": string,"promoter_id": string
                   }
@@ -71,14 +77,14 @@ isOneToOne: false
                   ]
                 },"clients": {
                   Row: {
-                    "contact_name": string | null,"created_at": string,"id": string,"name": string,"notes": string | null,"phone": string | null
+                    "contact_name": string | null,"created_at": string,"id": string,"kind": Database["public"]["Enums"]["client_kind"],"listed": boolean,"name": string,"notes": string | null,"phone": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "contact_name"?: string | null,"created_at"?: string,"id"?: string,"name": string,"notes"?: string | null,"phone"?: string | null
+                    "contact_name"?: string | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]["Enums"]["client_kind"],"listed"?: boolean,"name": string,"notes"?: string | null,"phone"?: string | null
                   }
                   Update: {
-                    "contact_name"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"notes"?: string | null,"phone"?: string | null
+                    "contact_name"?: string | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]["Enums"]["client_kind"],"listed"?: boolean,"name"?: string,"notes"?: string | null,"phone"?: string | null
                   }
                   Relationships: [
                     
@@ -423,7 +429,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "briefing_status": "aguardando"|"fechado","job_status": "rascunho"|"publicado"|"realizado"|"cancelado","job_type": "evento"|"acao","media_kind": "foto"|"video"|"pasta","pay_source": "tabela"|"manual","person_link": "freelancer"|"employee"|"provider"|"unclassified","user_role": "owner"|"manager"|"media"|"promoter"
+            "briefing_status": "aguardando"|"fechado","client_kind": "evento"|"acao"|"ambos","job_status": "rascunho"|"publicado"|"realizado"|"cancelado","job_type": "evento"|"acao","media_kind": "foto"|"video"|"pasta","pay_source": "tabela"|"manual","person_link": "freelancer"|"employee"|"provider"|"unclassified","user_role": "owner"|"manager"|"media"|"promoter"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -543,7 +549,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "briefing_status": ["aguardando", "fechado"],"job_status": ["rascunho", "publicado", "realizado", "cancelado"],"job_type": ["evento", "acao"],"media_kind": ["foto", "video", "pasta"],"pay_source": ["tabela", "manual"],"person_link": ["freelancer", "employee", "provider", "unclassified"],"user_role": ["owner", "manager", "media", "promoter"]
+            "briefing_status": ["aguardando", "fechado"],"client_kind": ["evento", "acao", "ambos"],"job_status": ["rascunho", "publicado", "realizado", "cancelado"],"job_type": ["evento", "acao"],"media_kind": ["foto", "video", "pasta"],"pay_source": ["tabela", "manual"],"person_link": ["freelancer", "employee", "provider", "unclassified"],"user_role": ["owner", "manager", "media", "promoter"]
           }
         }
 } as const

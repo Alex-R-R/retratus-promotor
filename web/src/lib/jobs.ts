@@ -16,6 +16,8 @@ type Enums = Database['public']['Enums']
 export type JobType = Enums['job_type']
 export type JobStatus = Enums['job_status']
 export type Briefing = Enums['briefing_status']
+export type ClienteTipo = Enums['client_kind']
+export const CLIENTE_TIPO_LABEL: Record<ClienteTipo, string> = { evento: 'Eventos', acao: 'Ações', ambos: 'Eventos e ações' }
 export type Staffing = 'sem_vagas' | 'vagas_abertas' | 'equipe_completa'
 
 export const EQUIPAMENTOS = ['Totem', 'Self print', 'Totem slim', 'Plataforma 360', 'Túnel de LED', 'Máquina de garra'] as const

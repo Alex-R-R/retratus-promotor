@@ -16,12 +16,13 @@ Fuso da operação: `America/Belem`. Horários gravados como `timestamptz`.
 | `media_kind` | `foto`, `video`, `pasta` |
 | `pay_source` | `tabela`, `manual` |
 
-Equipamentos (texto com check): `Totem`, `Self print`, `Totem slim`, `Plataforma 360`, `Túnel de LED`, `Máquina de garra`.
+Equipamentos padrão: `Totem`, `Self print`, `Totem slim`, `Plataforma 360`, `Túnel de LED`, `Máquina de garra`. Evento só usa estes (constraint trigger adiada `event_standard_equipment`). Ação aceita também serviço digitado (2 a 60 caracteres, sem espaço nas pontas).
 
 ## Tabelas (schema `public`)
 
 - `profiles` (id = `auth.users.id`, full_name, phone, email, role default `promoter`, link default `unclassified`, approved default false, created_at). Criado por trigger no cadastro, lendo `full_name` e `phone` de `raw_user_meta_data`.
-- `clients` (id, name, contact_name, phone, notes, created_at)
+- `clients` (id, name, contact_name, phone, notes, kind `client_kind` default `ambos`, listed default true, created_at). `kind` (`evento`, `acao`, `ambos`) filtra a escolha no formulário. `listed = false` é contratante avulso, criado na hora para um só trabalho.
+- `action_services` (name pk, created_at): serviços de ação guardados para as próximas ações. Só owner/manager leem e escrevem.
 - `jobs` (id, type, title, client_id null, location, city, briefing default `aguardando`, status default `rascunho`, notes, cancel_reason, created_by, created_at, updated_at)
 - `job_days` (id, job_id, starts_at, ends_at; ends_at > starts_at; evento tem exatamente 1 dia)
 - `job_slots` (id, job_id, equipment, capacity 1–30; único por job+equipment)

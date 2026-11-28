@@ -27,6 +27,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     { to: '/agenda', label: 'Agenda', show: true },
     { to: '/midias', label: 'Mídias', show: veMidias(profile) },
     { to: '/valores', label: 'Valores', show: profile?.role === 'owner' },
+    { to: '/contratantes', label: 'Contratantes', show: staff },
     { to: '/equipe', label: 'Equipe', show: staff, contador: pendentes },
     { to: '/perfil', label: 'Meu cadastro', show: true, soDesktop: true },
   ].filter(i => i.show)
